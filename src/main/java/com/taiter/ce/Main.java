@@ -18,27 +18,13 @@ package com.taiter.ce;
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.security.MessageDigest;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.taiter.ce.CItems.*;
+import com.taiter.ce.Enchantments.CEnchantment;
+import com.taiter.ce.Enchantments.CEnchantment.Application;
+import com.taiter.ce.Enchantments.EnchantManager;
+import com.taiter.ce.Enchantments.Global.IceAspect;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -53,43 +39,13 @@ import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.taiter.ce.CItems.AssassinsBlade;
-import com.taiter.ce.CItems.Bandage;
-import com.taiter.ce.CItems.BearTrap;
-import com.taiter.ce.CItems.BeastmastersBow;
-import com.taiter.ce.CItems.CItem;
-import com.taiter.ce.CItems.Deathscythe;
-import com.taiter.ce.CItems.DruidBoots;
-import com.taiter.ce.CItems.Firecracker;
-import com.taiter.ce.CItems.FireworkBattery;
-import com.taiter.ce.CItems.Flamethrower;
-import com.taiter.ce.CItems.HealingShovel;
-import com.taiter.ce.CItems.HermesBoots;
-import com.taiter.ce.CItems.HookshotBow;
-import com.taiter.ce.CItems.Landmine;
-import com.taiter.ce.CItems.LivefireBoots;
-import com.taiter.ce.CItems.Medikit;
-import com.taiter.ce.CItems.Minigun;
-import com.taiter.ce.CItems.NecromancersStaff;
-import com.taiter.ce.CItems.PiranhaTrap;
-import com.taiter.ce.CItems.PoisonIvy;
-import com.taiter.ce.CItems.PotionLauncher;
-import com.taiter.ce.CItems.Powergloves;
-import com.taiter.ce.CItems.PricklyBlock;
-import com.taiter.ce.CItems.Pyroaxe;
-import com.taiter.ce.CItems.RocketBoots;
-import com.taiter.ce.CItems.ThorsAxe;
-import com.taiter.ce.Enchantments.CEnchantment;
-import com.taiter.ce.Enchantments.CEnchantment.Application;
-import com.taiter.ce.Enchantments.EnchantManager;
-import com.taiter.ce.Enchantments.Global.IceAspect;
-
-import net.milkbowl.vault.economy.Economy;
+import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public final class Main extends JavaPlugin {
 
