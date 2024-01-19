@@ -1,40 +1,40 @@
 package com.taiter.ce.Enchantments.Global;
 
+import com.taiter.ce.EffectManager;
+import com.taiter.ce.Enchantments.CEnchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 
-import com.taiter.ce.EffectManager;
-import com.taiter.ce.Enchantments.CEnchantment;
-
-
 
 public class Charge extends CEnchantment {
 
-	float	DamageIncreasePercentage;
+  float DamageIncreasePercentage;
 
-	public Charge(Application app) {
-		super(app);		
-		configEntries.put("DamageIncreasePercentagePerLevel", 10);
-		triggers.add(Trigger.DAMAGE_GIVEN);
-	}
+  public Charge(Application app) {
+    super(app);
+    configEntries.put("DamageIncreasePercentagePerLevel", 10);
+    triggers.add(Trigger.DAMAGE_GIVEN);
+  }
 
-	@Override
-	public void effect(Event e, ItemStack item, int level) {
-		EntityDamageByEntityEvent event = (EntityDamageByEntityEvent) e;
-		Player player = (Player) event.getDamager();
-		
-		if(!player.isSprinting())
-			return;
-		
-		event.setDamage(event.getDamage() * (1 + DamageIncreasePercentage * level)); 
+  @Override
+  public void effect(Event e, ItemStack item, int level) {
+    EntityDamageByEntityEvent event = (EntityDamageByEntityEvent) e;
+    Player player = (Player) event.getDamager();
 
-		EffectManager.playSound(player.getLocation(), "BLOCK_ANVIL_LAND", 0.1f, 0.1f);
-	}
+    if (!player.isSprinting()) {
+      return;
+    }
 
-	@Override
-	public void initConfigEntries() {
-		DamageIncreasePercentage = Float.parseFloat(getConfig().getString("Enchantments." + getOriginalName() + ".DamageIncreasePercentagePerLevel"))/100;		
-	}
+    event.setDamage(event.getDamage() * (1 + DamageIncreasePercentage * level));
+
+    EffectManager.playSound(player.getLocation(), "BLOCK_ANVIL_LAND", 0.1f, 0.1f);
+  }
+
+  @Override
+  public void initConfigEntries() {
+    DamageIncreasePercentage = Float.parseFloat(getConfig().getString(
+        "Enchantments." + getOriginalName() + ".DamageIncreasePercentagePerLevel")) / 100;
+  }
 }

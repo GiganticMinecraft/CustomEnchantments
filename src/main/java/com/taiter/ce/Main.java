@@ -1,29 +1,64 @@
 package com.taiter.ce;
 
 /*
-* This file is part of Custom Enchantments
-* Copyright (C) Taiterio 2015
-*
-* This program is free software: you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as published by the
-* Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful, but WITHOUT
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
-* for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* along with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
+ * This file is part of Custom Enchantments
+ * Copyright (C) Taiterio 2015
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.taiter.ce.CItems.*;
+import com.taiter.ce.CItems.AssassinsBlade;
+import com.taiter.ce.CItems.Bandage;
+import com.taiter.ce.CItems.BearTrap;
+import com.taiter.ce.CItems.BeastmastersBow;
+import com.taiter.ce.CItems.CItem;
+import com.taiter.ce.CItems.Deathscythe;
+import com.taiter.ce.CItems.DruidBoots;
+import com.taiter.ce.CItems.Firecracker;
+import com.taiter.ce.CItems.FireworkBattery;
+import com.taiter.ce.CItems.Flamethrower;
+import com.taiter.ce.CItems.HealingShovel;
+import com.taiter.ce.CItems.HermesBoots;
+import com.taiter.ce.CItems.HookshotBow;
+import com.taiter.ce.CItems.Landmine;
+import com.taiter.ce.CItems.LivefireBoots;
+import com.taiter.ce.CItems.Medikit;
+import com.taiter.ce.CItems.Minigun;
+import com.taiter.ce.CItems.NecromancersStaff;
+import com.taiter.ce.CItems.PiranhaTrap;
+import com.taiter.ce.CItems.PoisonIvy;
+import com.taiter.ce.CItems.PotionLauncher;
+import com.taiter.ce.CItems.Powergloves;
+import com.taiter.ce.CItems.PricklyBlock;
+import com.taiter.ce.CItems.Pyroaxe;
+import com.taiter.ce.CItems.RocketBoots;
+import com.taiter.ce.CItems.ThorsAxe;
 import com.taiter.ce.Enchantments.CEnchantment;
 import com.taiter.ce.Enchantments.CEnchantment.Application;
 import com.taiter.ce.Enchantments.EnchantManager;
 import com.taiter.ce.Enchantments.Global.IceAspect;
+import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -40,407 +75,495 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
 public final class Main extends JavaPlugin {
 
-    public static Plugin plugin;
-    public static FileConfiguration config;
-    public static CEListener listener;
-    public static CeCommand commandC;
-    private static ClassLoader classLoader;
+  public static Plugin plugin;
+  public static FileConfiguration config;
+  public static CEListener listener;
+  public static CeCommand commandC;
+  public static Set<CItem> items;
+  public static Boolean createExplosions;
+  public static Boolean hasRPGItems = false;
+  // The inventories for the Enchantment Menu
+  public static Inventory CEMainMenu;
+  public static Inventory CEEnchantmentMainMenu;
+  public static Inventory CEItemMenu;
+  public static Inventory CEConfigMenu;
+  public static Inventory CEArmorMenu;
+  public static Inventory CEBootsMenu;
+  public static Inventory CEBowMenu;
+  public static Inventory CEGlobalMenu;
+  public static Inventory CEHelmetMenu;
+  public static Inventory CEToolMenu;
+  // Economy
+  public static Economy econ = null;
+  //------------------------------------------------------
+  public static Boolean hasEconomy = false;
+  public static Plugin econPl;
+  private static ClassLoader classLoader;
+  //------------------------------------------------------
+  public Boolean hasUpdate = false;
+  public Boolean hasChecked = false;
+  // Updater
+  private URL updateListURL;
+  private URL updateDownloadURL;
+  private String currentVersion;
+  private String newVersion;
+  private String newMD5;
+  //------------------------------------------------------
 
-    public static Set<CItem> items;
+  public static WorldGuardPlugin getWorldGuard() {
+    Plugin worldguard = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
+      if (worldguard != null && worldguard instanceof WorldGuardPlugin && worldguard.isEnabled()) {
+          return (WorldGuardPlugin) worldguard;
+      }
+    return null;
+  }
 
-    public static Boolean createExplosions;
-    public static Boolean hasRPGItems = false;
-
-    // The inventories for the Enchantment Menu
-    public static Inventory CEMainMenu;
-
-    public static Inventory CEEnchantmentMainMenu;
-    public static Inventory CEItemMenu;
-    public static Inventory CEConfigMenu;
-
-    public static Inventory CEArmorMenu;
-    public static Inventory CEBootsMenu;
-    public static Inventory CEBowMenu;
-    public static Inventory CEGlobalMenu;
-    public static Inventory CEHelmetMenu;
-    public static Inventory CEToolMenu;
-    //------------------------------------------------------
-
-    // Economy
-    public static Economy econ = null;
-    public static Boolean hasEconomy = false;
-    public static Plugin econPl;
-    //------------------------------------------------------
-
-    // Updater
-    private URL updateListURL;
-    private URL updateDownloadURL;
-
-    private String currentVersion;
-    private String newVersion;
-    private String newMD5;
-
-    public Boolean hasUpdate = false;
-    public Boolean hasChecked = false;
-    //------------------------------------------------------
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public void onEnable() {
-        plugin = this;
-        commandC = new CeCommand(this);
-        classLoader = this.getClassLoader();
-
-        items = new HashSet<CItem>();
-
-        //Load/Create config
-        this.saveDefaultConfig();
-        config = this.getConfig();
-        config.options().copyDefaults(true);
-        this.saveConfig();
-        if (config.contains("enchantments"))
-            Tools.convertOldConfig();
-
-        // Start the listener
-        initializeListener();
-
-        //Load global config values
-        try {
-            createExplosions = Boolean.parseBoolean(Main.config.getString("Global.CreateExplosions"));
-            // Get the maximum amount of Enchantments on an Item
-            EnchantManager.setMaxEnchants(Integer.parseInt(config.getString("Global.Enchantments.MaximumCustomEnchantments")));
-        } catch (Exception ex) {
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[CE] Config error, please check the values of");
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[CE] Global.CreateExplosions (Has to be true or false) and");
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[CE] Global.Enchantments.MaximumCustomEnchantments (Has to be a number)");
-        }
-
-        // Set the Loreprefix
-        EnchantManager.setLorePrefix(resolveEnchantmentColor());
-
-        EnchantManager.setEnchantBookName(ChatColor.translateAlternateColorCodes('&', Main.config.getString("Global.Books.Name")));
-
-        // Check and set up the Economy
-        if (setupEconomy()) {
-            Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[CE] Vault has been detected!");
-            hasEconomy = true;
-        }
-
-        if (Main.getWorldGuard() != null)
-            Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[CE] WorldGuard has been detected!");
-
-        if (this.getServer().getPluginManager().getPlugin("RPG_Items") != null)
-            hasRPGItems = true;
-
-        // Make the list of Enchantments
-        makeLists(true, true);
-
-        if (EnchantManager.getEnchantments().size() == 0)
-            return;
-
-        try {
-            writePermissions();
-        } catch (IllegalArgumentException ex) {
-            ex.printStackTrace();
-        }
-
-        Tools.generateInventories();
-
-        currentVersion = plugin.getDescription().getVersion();
-        try {
-            updateListURL = new URL("https://api.curseforge.com/servermods/files?projectIds=54406");
-        } catch (MalformedURLException ignored) {}
-    }
-
-    @Override
-    public void onDisable() {
-        getServer().getScheduler().cancelTasks(plugin);
-        for (CEnchantment c : EnchantManager.getEnchantments())
-            if (c instanceof IceAspect)
-                for (HashMap<org.bukkit.block.Block, String> list : ((IceAspect) c).IceLists)
-                    ((IceAspect) c).deleteIce(list);
-    }
-
-    public static WorldGuardPlugin getWorldGuard() {
-        Plugin worldguard = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
-        if (worldguard != null && worldguard instanceof WorldGuardPlugin && worldguard.isEnabled())
-            return (WorldGuardPlugin) worldguard;
-        return null;
-    }
-
-    public void initializeListener() {
-        if (listener != null)
-            HandlerList.unregisterAll(listener);
-
-        listener = new CEListener();
-
-        // Register the events
-        getServer().getPluginManager().registerEvents(listener, this);
-
-        // Unregister unused events
-
-        // EnchantItemEvent may be used
-        if (!getConfig().getBoolean("Global.Enchantments.CEnchantmentTable"))
-            EnchantItemEvent.getHandlerList().unregister(listener);
-    }
-
-    public static String resolveEnchantmentColor() {
-        String color = Main.plugin.getConfig().getString("Global.Enchantments.CEnchantmentColor");
-        if (color.contains(";")) {
-            String[] temp = color.split(";");
-            color = "";
-            for (String c : temp)
-                try {
-                    color += ChatColor.valueOf(c.toUpperCase());
-                } catch (Exception e) {
-                    Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "[CE] ERROR: The ChatColor '" + c
-                            + "' was not found, please check the list of Bukkit ChatColors and update the ChatColor Section. The ChatColor will be ignored to ensure that CE is still working.");
-                }
-        } else {
+  public static String resolveEnchantmentColor() {
+    String color = Main.plugin.getConfig().getString("Global.Enchantments.CEnchantmentColor");
+    if (color.contains(";")) {
+      String[] temp = color.split(";");
+      color = "";
+        for (String c : temp) {
             try {
-                color = ChatColor.valueOf(Main.config.getString("Global.Enchantments.CEnchantmentColor").toUpperCase()).toString();
+                color += ChatColor.valueOf(c.toUpperCase());
             } catch (Exception e) {
-                Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "[CE] ERROR: The ChatColor '" + color
+                Bukkit.getConsoleSender()
+                    .sendMessage(ChatColor.DARK_RED + "[CE] ERROR: The ChatColor '" + c
                         + "' was not found, please check the list of Bukkit ChatColors and update the ChatColor Section. The ChatColor will be ignored to ensure that CE is still working.");
             }
         }
-        return color;
+    } else {
+      try {
+        color = ChatColor.valueOf(
+                Main.config.getString("Global.Enchantments.CEnchantmentColor").toUpperCase())
+            .toString();
+      } catch (Exception e) {
+        Bukkit.getConsoleSender()
+            .sendMessage(ChatColor.DARK_RED + "[CE] ERROR: The ChatColor '" + color
+                + "' was not found, please check the list of Bukkit ChatColors and update the ChatColor Section. The ChatColor will be ignored to ensure that CE is still working.");
+      }
+    }
+    return color;
+  }
+
+  public static void makeLists(boolean finalize, boolean printSuccess) {
+    long time = System.currentTimeMillis();
+
+    // ------------Dynamic enchantment loading----------------------
+    try {
+      String path = plugin.getDataFolder().getAbsolutePath();
+      String classSource = Bukkit.getPluginManager().getPlugin("CustomEnchantments").getClass()
+          .getProtectionDomain().getCodeSource().getLocation().getFile();
+      String seperator = "\\\\";
+        if (classSource.contains("/")) {
+            seperator = "/";
+        }
+      String[] classSourceSplit = classSource.split(seperator);
+      path = path.substring(0, path.length() - 18) + classSourceSplit[classSourceSplit.length
+          - 1].replace("%20", " ");
+      JarFile jar = new JarFile(path);
+      Enumeration<JarEntry> entries = jar.entries();
+
+      while (entries.hasMoreElements()) {
+        String entryName = entries.nextElement().getName();
+          if (!entryName.contains("$") && entryName.contains("Enchantments") && entryName.endsWith(
+              ".class")
+              && !(entryName.contains("CEnchantment") || entryName.contains("EnchantManager")
+              || entryName.contains("GlowEnchantment"))) {
+              try {
+                  Application app = null;
+                  String className = entryName.replace(".class", "");
+
+                  if (entryName.contains("/")) {
+                      app = Application.valueOf(entryName.split("/")[4].toUpperCase());
+                      className = className.replaceAll("/", ".");
+                  } else if (entryName.contains("\\")) {
+                      app = Application.valueOf(entryName.split("\\\\")[4].toUpperCase());
+                      className = className.replaceAll("\\\\", ".");
+                  }
+                  EnchantManager.getEnchantments()
+                      .add((CEnchantment) classLoader.loadClass(className)
+                          .getDeclaredConstructor(Application.class).newInstance(app));
+              } catch (ClassNotFoundException e) {
+              } // Checked exception, should never be thrown
+          }
+      }
+
+      jar.close();
+    } catch (Exception e) {
+      if (e instanceof FileNotFoundException) {
+        Bukkit.getConsoleSender()
+            .sendMessage(ChatColor.RED + "[CE] Custom Enchantments could not be started,");
+        Bukkit.getConsoleSender()
+            .sendMessage(ChatColor.RED + "[CE] please make sure that you the plugins jar");
+        Bukkit.getConsoleSender().sendMessage(
+            ChatColor.RED + "[CE] in your plugin folder is named 'CustomEnchantments'.");
+      } else {
+        Bukkit.getConsoleSender()
+            .sendMessage(ChatColor.RED + "[CE] Custom Enchantments could not be loaded,");
+        Bukkit.getConsoleSender().sendMessage(
+            ChatColor.RED + "[CE] please report this error on the Bukkit page of the plugin");
+        Bukkit.getConsoleSender()
+            .sendMessage(ChatColor.RED + "[CE] by sending the following to Taiterio via PM:");
+        e.printStackTrace();
+      }
+      plugin.getServer().getPluginManager().disablePlugin(plugin);
+      return;
+    }
+    // --------------------------------------------------------------------------------
+
+      if (finalize) {
+          for (CEnchantment ce : new HashSet<CEnchantment>(EnchantManager.getEnchantments())) {
+              ce.finalizeEnchantment();
+          }
+      }
+
+      if (printSuccess) {
+          Bukkit.getConsoleSender()
+              .sendMessage(ChatColor.GREEN + "[CE] All Enchantments have been loaded.");
+      }
+
+    // ITEMS
+
+    // Bow
+    items.add(new Minigun("Minigun", ChatColor.AQUA, "Fires a Volley of Arrows", 0, Material.BOW));
+    items.add(new BeastmastersBow("Beastmaster's Bow", ChatColor.AQUA,
+        "Tame the wilderness;and turn nature against your foes!", 0, Material.BOW));
+    items.add(new HookshotBow("Hookshot Bow", ChatColor.AQUA, "Everyone is just one hook away", 0,
+        Material.BOW));
+
+    // Boots
+    items.add(
+        new HermesBoots("Hermes Boots", ChatColor.GOLD, "These boots are made for walkin'", 100,
+            Material.DIAMOND_BOOTS));
+    items.add(new LivefireBoots("Livefire Boots", ChatColor.DARK_RED,
+        "Leave a burning trail...;Because it's fun!", 0, Material.DIAMOND_BOOTS));
+    items.add(new RocketBoots("Rocket Boots", ChatColor.AQUA,
+        "Up we go!; ;WARNING: May cause dismemberment,;            death;            and explosions",
+        0, Material.DIAMOND_BOOTS));
+    items.add(
+        new DruidBoots("Druid Boots", ChatColor.DARK_GREEN, "Let the nature rejuvenate you!", 0,
+            Material.DIAMOND_BOOTS));
+
+    // Flint + Steel
+    items.add(new Flamethrower("Flamethrower", ChatColor.DARK_RED, "Burn, baby, burn!", 0,
+        Material.FLINT_AND_STEEL));
+
+    // Stick
+    items.add(new NecromancersStaff("Necromancer's Staff of Destruction", ChatColor.AQUA,
+        "Wreak chaos everywhere,;Because why not?", 0, Material.STICK));
+
+    // Armor
+    // items.add((CItem) new Swimsuit("Scuba Helmet", ChatColor.BLUE, "Just
+    // stay underwater for a while,;Take your time!", 60,
+    // Material.IRON_HELMET));
+
+    // Axe
+    items.add(new ThorsAxe("Thor's Axe", ChatColor.GOLD,
+        "Smite your enemies down with mighty thunder!;Note: Batteries not included.", 0,
+        Material.DIAMOND_AXE));
+    items.add(new Pyroaxe("Pyroaxe", ChatColor.DARK_RED,
+        "Are your enemies burning?;Do you want to make their situation worse?;Then this is just perfect for you!",
+        0, Material.DIAMOND_AXE));
+
+    // Sword
+    items.add(new AssassinsBlade("Assassin's Blade", ChatColor.AQUA,
+        "Sneak up on your enemies and hit them hard!; ;(High chance of failure against Hacked Clients)",
+        200, Material.GOLDEN_SWORD));
+
+    // Shovel
+    items.add(new HealingShovel("Healing Shovel", ChatColor.GREEN,
+        "Smacking other people in the face;has never been healthier!", 600,
+        Material.GOLDEN_SHOVEL));
+
+    // Projectile
+    items.add(new Firecracker("Firecracker", ChatColor.DARK_RED,
+        "Makes every situation a good situation!", 0, Material.SNOWBALL));
+
+    // Block
+    items.add(new FireworkBattery("Firework-Battery", ChatColor.DARK_RED,
+        "Make the sky shine bright with colors!", 0, Material.REDSTONE_BLOCK));
+
+    // Mines
+    items.add(
+        new BearTrap("Bear Trap", ChatColor.GRAY, "Just hope that it does not contain bears...", 0,
+            Material.LIGHT_WEIGHTED_PRESSURE_PLATE));
+    items.add(new PiranhaTrap("Piranha Trap", ChatColor.GRAY, "Who came up with this?", 0,
+        Material.OAK_PRESSURE_PLATE));
+    items.add(new PoisonIvy("Poison Ivy", ChatColor.DARK_GREEN,
+        "If you're too cheap to afford ladders,;just take this, it'll work just fine!", 0,
+        Material.VINE));
+    items.add(new PricklyBlock("Prickly Block", ChatColor.LIGHT_PURPLE,
+        "Just build a labyrinth out of these,;people will love you for it!", 0, Material.SAND));
+    items.add(new Landmine("Landmine", ChatColor.GRAY, "Just don't trigger it yourself, please.", 0,
+        Material.HEAVY_WEIGHTED_PRESSURE_PLATE));
+
+    // Any
+    items.add(new Powergloves("Powergloves", ChatColor.AQUA, "Throw all your problems away!", 500,
+        Material.QUARTZ));
+    items.add(new Medikit("Medikit", ChatColor.GREEN,
+        "Treats most of your ailments,;it even has a box of juice!", 2000, Material.NETHER_WART));
+    items.add(
+        new Bandage("Bandage", ChatColor.GREEN, "It has little hearts on it,;so you know it's good",
+            1000, Material.PAPER));
+    items.add(
+        new Deathscythe("Deathscythe", ChatColor.DARK_GRAY, "An ancient evil lies within...", 400,
+            Material.GOLDEN_HOE));
+    items.add(new PotionLauncher("Potion Launcher", ChatColor.DARK_GRAY,
+        "Instructions: Put potion into the righthand slot;                of the potion launcher,;                aim and fire!; ;Manufactured by "
+            + ChatColor.MAGIC + "Taiterio", 20,
+        Material.HOPPER));
+    //
+
+      if (finalize) {
+          for (CItem ci : items) {
+              ci.finalizeItem();
+          }
+      }
+
+      if (printSuccess) {
+          Bukkit.getConsoleSender()
+              .sendMessage(ChatColor.GREEN + "[CE] All Items have been loaded.");
+      }
+
+    deleteInactive();
+
+      if (printSuccess) {
+          if (Boolean.parseBoolean(Main.config.getString("Global.Logging.Enabled"))) {
+              Bukkit.getConsoleSender().sendMessage(
+                  ChatColor.GREEN + "[CE] Took " + (System.currentTimeMillis() - time)
+                      + "ms to initialize Custom Enchantments.");
+          }
+      }
+
+  }
+
+  private static void deleteInactive() {
+    Set<CEnchantment> e = new LinkedHashSet<CEnchantment>(EnchantManager.getEnchantments());
+    Set<CItem> i = new LinkedHashSet<CItem>(items);
+    for (CEnchantment ce : e) {
+      if (!Boolean.parseBoolean(
+          config.getString("Enchantments." + ce.getOriginalName() + ".Enabled"))) {
+        EnchantManager.getEnchantments().remove(ce);
+        Bukkit.getConsoleSender().sendMessage(
+            ChatColor.RED + "[CE] Custom Enchantment " + ce.getOriginalName()
+                + " is disabled in the config.");
+      }
+    }
+    for (CItem ci : i) {
+      if (!Boolean.parseBoolean(config.getString("Items." + ci.getOriginalName() + ".Enabled"))) {
+        items.remove(ci);
+        Bukkit.getConsoleSender().sendMessage(
+            ChatColor.RED + "[CE] Custom Item " + ci.getOriginalName()
+                + " is disabled in the config.");
+      }
+    }
+    Tools.resolveLists();
+  }
+
+  @SuppressWarnings("deprecation")
+  @Override
+  public void onEnable() {
+    plugin = this;
+    commandC = new CeCommand(this);
+    classLoader = this.getClassLoader();
+
+    items = new HashSet<CItem>();
+
+    //Load/Create config
+    this.saveDefaultConfig();
+    config = this.getConfig();
+    config.options().copyDefaults(true);
+    this.saveConfig();
+      if (config.contains("enchantments")) {
+          Tools.convertOldConfig();
+      }
+
+    // Start the listener
+    initializeListener();
+
+    //Load global config values
+    try {
+      createExplosions = Boolean.parseBoolean(Main.config.getString("Global.CreateExplosions"));
+      // Get the maximum amount of Enchantments on an Item
+      EnchantManager.setMaxEnchants(
+          Integer.parseInt(config.getString("Global.Enchantments.MaximumCustomEnchantments")));
+    } catch (Exception ex) {
+      Bukkit.getConsoleSender()
+          .sendMessage(ChatColor.RED + "[CE] Config error, please check the values of");
+      Bukkit.getConsoleSender().sendMessage(
+          ChatColor.RED + "[CE] Global.CreateExplosions (Has to be true or false) and");
+      Bukkit.getConsoleSender().sendMessage(ChatColor.RED
+          + "[CE] Global.Enchantments.MaximumCustomEnchantments (Has to be a number)");
     }
 
-    private void writePermissions() {
-        Permission mainNode = new Permission("ce.*", "The main permission node for Custom Enchantments.", PermissionDefault.OP);
+    // Set the Loreprefix
+    EnchantManager.setLorePrefix(resolveEnchantmentColor());
 
-        Permission runecrafting = new Permission("ce.runecrafting", "The permission for Runecrafting.", PermissionDefault.OP);
-        runecrafting.addParent(mainNode, true);
+    EnchantManager.setEnchantBookName(
+        ChatColor.translateAlternateColorCodes('&', Main.config.getString("Global.Books.Name")));
 
-        Permission cmdNode = new Permission("ce.cmd.*", "The permission node for CE's commands.", PermissionDefault.OP);
-        Permission enchNode = new Permission("ce.ench.*", "The permission node for CE's EnchantManager.getEnchantments().", PermissionDefault.OP);
-        Permission itemNode = new Permission("ce.item.*", "The permission node for CE's  items.", PermissionDefault.OP);
-
-        cmdNode.addParent(mainNode, true);
-        enchNode.addParent(mainNode, true);
-        itemNode.addParent(mainNode, true);
-
-        Permission cmdMenu = new Permission("ce.cmd.menu", "The permission for the CE command 'menu'");
-        Permission cmdList = new Permission("ce.cmd.reload", "The permission for the CE command 'reload'");
-        Permission cmdGive = new Permission("ce.cmd.give", "The permission for the CE command 'give'");
-        Permission cmdChange = new Permission("ce.cmd.change", "The permission for the CE command 'change'");
-        Permission cmdEnchant = new Permission("ce.cmd.enchant", "The permission for the CE command 'enchant'");
-        Permission cmdRunecraft = new Permission("ce.cmd.runecrafting", "The permission for the CE command 'runecrafting'");
-
-        cmdMenu.addParent(cmdNode, true);
-        cmdList.addParent(cmdNode, true);
-        cmdGive.addParent(cmdNode, true);
-        cmdChange.addParent(cmdNode, true);
-        cmdEnchant.addParent(cmdNode, true);
-        cmdRunecraft.addParent(cmdNode, true);
-
-        Bukkit.getServer().getPluginManager().addPermission(mainNode);
-
-        Bukkit.getServer().getPluginManager().addPermission(runecrafting);
-
-        Bukkit.getServer().getPluginManager().addPermission(cmdNode);
-        Bukkit.getServer().getPluginManager().addPermission(enchNode);
-        Bukkit.getServer().getPluginManager().addPermission(itemNode);
-
-        Bukkit.getServer().getPluginManager().addPermission(cmdMenu);
-        Bukkit.getServer().getPluginManager().addPermission(cmdList);
-        Bukkit.getServer().getPluginManager().addPermission(cmdGive);
-        Bukkit.getServer().getPluginManager().addPermission(cmdChange);
-        Bukkit.getServer().getPluginManager().addPermission(cmdEnchant);
-        Bukkit.getServer().getPluginManager().addPermission(cmdRunecraft);
-
-        for (CItem ci : items) {
-            Permission itemTemp = new Permission("ce.item." + ci.getPermissionName(), "The permission for the CE Item '" + ci.getOriginalName() + "'.");
-            itemTemp.addParent(itemNode, true);
-            Bukkit.getServer().getPluginManager().addPermission(itemTemp);
-        }
-
-        for (CEnchantment ce : EnchantManager.getEnchantments()) {
-            Permission enchTemp = new Permission("ce.ench." + ce.getPermissionName(), "The permission for the CE Enchantment '" + ce.getOriginalName() + "'.");
-            enchTemp.addParent(enchNode, true);
-            Bukkit.getServer().getPluginManager().addPermission(enchTemp);
-        }
-
+    // Check and set up the Economy
+    if (setupEconomy()) {
+      Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[CE] Vault has been detected!");
+      hasEconomy = true;
     }
 
-    private boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null)
-            return false;
-        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null)
-            return false;
-        econ = rsp.getProvider();
-        return econ != null;
+      if (Main.getWorldGuard() != null) {
+          Bukkit.getConsoleSender()
+              .sendMessage(ChatColor.GREEN + "[CE] WorldGuard has been detected!");
+      }
+
+      if (this.getServer().getPluginManager().getPlugin("RPG_Items") != null) {
+          hasRPGItems = true;
+      }
+
+    // Make the list of Enchantments
+    makeLists(true, true);
+
+      if (EnchantManager.getEnchantments().size() == 0) {
+          return;
+      }
+
+    try {
+      writePermissions();
+    } catch (IllegalArgumentException ex) {
+      ex.printStackTrace();
     }
 
-    public static void makeLists(boolean finalize, boolean printSuccess) {
-        long time = System.currentTimeMillis();
+    Tools.generateInventories();
 
-        // ------------Dynamic enchantment loading----------------------
-        try {
-            String path = plugin.getDataFolder().getAbsolutePath();
-            String classSource = Bukkit.getPluginManager().getPlugin("CustomEnchantments").getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
-            String seperator = "\\\\";
-            if (classSource.contains("/"))
-                seperator = "/";
-            String[] classSourceSplit = classSource.split(seperator);
-            path = path.substring(0, path.length() - 18) + classSourceSplit[classSourceSplit.length - 1].replace("%20", " ");
-            JarFile jar = new JarFile(path);
-            Enumeration<JarEntry> entries = jar.entries();
+    currentVersion = plugin.getDescription().getVersion();
+    try {
+      updateListURL = new URL("https://api.curseforge.com/servermods/files?projectIds=54406");
+    } catch (MalformedURLException ignored) {
+    }
+  }
 
-            while (entries.hasMoreElements()) {
-                String entryName = entries.nextElement().getName();
-                if (!entryName.contains("$") && entryName.contains("Enchantments") && entryName.endsWith(".class")
-                        && !(entryName.contains("CEnchantment") || entryName.contains("EnchantManager") || entryName.contains("GlowEnchantment")))
-                    try {
-                        Application app = null;
-                        String className = entryName.replace(".class", "");
+  @Override
+  public void onDisable() {
+    getServer().getScheduler().cancelTasks(plugin);
+      for (CEnchantment c : EnchantManager.getEnchantments()) {
+          if (c instanceof IceAspect) {
+              for (HashMap<org.bukkit.block.Block, String> list : ((IceAspect) c).IceLists) {
+                  ((IceAspect) c).deleteIce(list);
+              }
+          }
+      }
+  }
 
-                        if (entryName.contains("/")) {
-                            app = Application.valueOf(entryName.split("/")[4].toUpperCase());
-                            className = className.replaceAll("/", ".");
-                        } else if (entryName.contains("\\")) {
-                            app = Application.valueOf(entryName.split("\\\\")[4].toUpperCase());
-                            className = className.replaceAll("\\\\", ".");
-                        }
-                        EnchantManager.getEnchantments().add((CEnchantment) classLoader.loadClass(className).getDeclaredConstructor(Application.class).newInstance(app));
-                    } catch (ClassNotFoundException e) {
-                    } // Checked exception, should never be thrown
-            }
+  public void initializeListener() {
+      if (listener != null) {
+          HandlerList.unregisterAll(listener);
+      }
 
-            jar.close();
-        } catch (Exception e) {
-            if (e instanceof FileNotFoundException) {
-                Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[CE] Custom Enchantments could not be started,");
-                Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[CE] please make sure that you the plugins jar");
-                Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[CE] in your plugin folder is named 'CustomEnchantments'.");
-            } else {
-                Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[CE] Custom Enchantments could not be loaded,");
-                Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[CE] please report this error on the Bukkit page of the plugin");
-                Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[CE] by sending the following to Taiterio via PM:");
-                e.printStackTrace();
-            }
-            plugin.getServer().getPluginManager().disablePlugin(plugin);
-            return;
-        }
-        // --------------------------------------------------------------------------------
+    listener = new CEListener();
 
-        if (finalize)
-            for (CEnchantment ce : new HashSet<CEnchantment>(EnchantManager.getEnchantments()))
-                ce.finalizeEnchantment();
+    // Register the events
+    getServer().getPluginManager().registerEvents(listener, this);
 
-        if (printSuccess)
-            Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[CE] All Enchantments have been loaded.");
+    // Unregister unused events
 
-        // ITEMS
+    // EnchantItemEvent may be used
+      if (!getConfig().getBoolean("Global.Enchantments.CEnchantmentTable")) {
+          EnchantItemEvent.getHandlerList().unregister(listener);
+      }
+  }
 
-        // Bow
-        items.add(new Minigun("Minigun", ChatColor.AQUA, "Fires a Volley of Arrows", 0, Material.BOW));
-        items.add(new BeastmastersBow("Beastmaster's Bow", ChatColor.AQUA, "Tame the wilderness;and turn nature against your foes!", 0, Material.BOW));
-        items.add(new HookshotBow("Hookshot Bow", ChatColor.AQUA, "Everyone is just one hook away", 0, Material.BOW));
+  private void writePermissions() {
+    Permission mainNode = new Permission("ce.*",
+        "The main permission node for Custom Enchantments.", PermissionDefault.OP);
 
-        // Boots
-        items.add(new HermesBoots("Hermes Boots", ChatColor.GOLD, "These boots are made for walkin'", 100, Material.DIAMOND_BOOTS));
-        items.add(new LivefireBoots("Livefire Boots", ChatColor.DARK_RED, "Leave a burning trail...;Because it's fun!", 0, Material.DIAMOND_BOOTS));
-        items.add(new RocketBoots("Rocket Boots", ChatColor.AQUA, "Up we go!; ;WARNING: May cause dismemberment,;            death;            and explosions", 0, Material.DIAMOND_BOOTS));
-        items.add(new DruidBoots("Druid Boots", ChatColor.DARK_GREEN, "Let the nature rejuvenate you!", 0, Material.DIAMOND_BOOTS));
+    Permission runecrafting = new Permission("ce.runecrafting", "The permission for Runecrafting.",
+        PermissionDefault.OP);
+    runecrafting.addParent(mainNode, true);
 
-        // Flint + Steel
-        items.add(new Flamethrower("Flamethrower", ChatColor.DARK_RED, "Burn, baby, burn!", 0, Material.FLINT_AND_STEEL));
+    Permission cmdNode = new Permission("ce.cmd.*", "The permission node for CE's commands.",
+        PermissionDefault.OP);
+    Permission enchNode = new Permission("ce.ench.*",
+        "The permission node for CE's EnchantManager.getEnchantments().", PermissionDefault.OP);
+    Permission itemNode = new Permission("ce.item.*", "The permission node for CE's  items.",
+        PermissionDefault.OP);
 
-        // Stick
-        items.add(new NecromancersStaff("Necromancer's Staff of Destruction", ChatColor.AQUA, "Wreak chaos everywhere,;Because why not?", 0, Material.STICK));
+    cmdNode.addParent(mainNode, true);
+    enchNode.addParent(mainNode, true);
+    itemNode.addParent(mainNode, true);
 
-        // Armor
-        // items.add((CItem) new Swimsuit("Scuba Helmet", ChatColor.BLUE, "Just
-        // stay underwater for a while,;Take your time!", 60,
-        // Material.IRON_HELMET));
+    Permission cmdMenu = new Permission("ce.cmd.menu", "The permission for the CE command 'menu'");
+    Permission cmdList = new Permission("ce.cmd.reload",
+        "The permission for the CE command 'reload'");
+    Permission cmdGive = new Permission("ce.cmd.give", "The permission for the CE command 'give'");
+    Permission cmdChange = new Permission("ce.cmd.change",
+        "The permission for the CE command 'change'");
+    Permission cmdEnchant = new Permission("ce.cmd.enchant",
+        "The permission for the CE command 'enchant'");
+    Permission cmdRunecraft = new Permission("ce.cmd.runecrafting",
+        "The permission for the CE command 'runecrafting'");
 
-        // Axe
-        items.add(new ThorsAxe("Thor's Axe", ChatColor.GOLD, "Smite your enemies down with mighty thunder!;Note: Batteries not included.", 0, Material.DIAMOND_AXE));
-        items.add(new Pyroaxe("Pyroaxe", ChatColor.DARK_RED, "Are your enemies burning?;Do you want to make their situation worse?;Then this is just perfect for you!", 0, Material.DIAMOND_AXE));
+    cmdMenu.addParent(cmdNode, true);
+    cmdList.addParent(cmdNode, true);
+    cmdGive.addParent(cmdNode, true);
+    cmdChange.addParent(cmdNode, true);
+    cmdEnchant.addParent(cmdNode, true);
+    cmdRunecraft.addParent(cmdNode, true);
 
-        // Sword
-        items.add(new AssassinsBlade("Assassin's Blade", ChatColor.AQUA, "Sneak up on your enemies and hit them hard!; ;(High chance of failure against Hacked Clients)", 200, Material.GOLDEN_SWORD));
+    Bukkit.getServer().getPluginManager().addPermission(mainNode);
 
-        // Shovel
-        items.add(new HealingShovel("Healing Shovel", ChatColor.GREEN, "Smacking other people in the face;has never been healthier!", 600, Material.GOLDEN_SHOVEL));
+    Bukkit.getServer().getPluginManager().addPermission(runecrafting);
 
-        // Projectile
-        items.add(new Firecracker("Firecracker", ChatColor.DARK_RED, "Makes every situation a good situation!", 0, Material.SNOWBALL));
+    Bukkit.getServer().getPluginManager().addPermission(cmdNode);
+    Bukkit.getServer().getPluginManager().addPermission(enchNode);
+    Bukkit.getServer().getPluginManager().addPermission(itemNode);
 
-        // Block
-        items.add(new FireworkBattery("Firework-Battery", ChatColor.DARK_RED, "Make the sky shine bright with colors!", 0, Material.REDSTONE_BLOCK));
+    Bukkit.getServer().getPluginManager().addPermission(cmdMenu);
+    Bukkit.getServer().getPluginManager().addPermission(cmdList);
+    Bukkit.getServer().getPluginManager().addPermission(cmdGive);
+    Bukkit.getServer().getPluginManager().addPermission(cmdChange);
+    Bukkit.getServer().getPluginManager().addPermission(cmdEnchant);
+    Bukkit.getServer().getPluginManager().addPermission(cmdRunecraft);
 
-        // Mines
-        items.add(new BearTrap("Bear Trap", ChatColor.GRAY, "Just hope that it does not contain bears...", 0, Material.LIGHT_WEIGHTED_PRESSURE_PLATE));
-        items.add(new PiranhaTrap("Piranha Trap", ChatColor.GRAY, "Who came up with this?", 0, Material.OAK_PRESSURE_PLATE));
-        items.add(new PoisonIvy("Poison Ivy", ChatColor.DARK_GREEN, "If you're too cheap to afford ladders,;just take this, it'll work just fine!", 0, Material.VINE));
-        items.add(new PricklyBlock("Prickly Block", ChatColor.LIGHT_PURPLE, "Just build a labyrinth out of these,;people will love you for it!", 0, Material.SAND));
-        items.add(new Landmine("Landmine", ChatColor.GRAY, "Just don't trigger it yourself, please.", 0, Material.HEAVY_WEIGHTED_PRESSURE_PLATE));
-
-        // Any
-        items.add(new Powergloves("Powergloves", ChatColor.AQUA, "Throw all your problems away!", 500, Material.QUARTZ));
-        items.add(new Medikit("Medikit", ChatColor.GREEN, "Treats most of your ailments,;it even has a box of juice!", 2000, Material.NETHER_WART));
-        items.add(new Bandage("Bandage", ChatColor.GREEN, "It has little hearts on it,;so you know it's good", 1000, Material.PAPER));
-        items.add(new Deathscythe("Deathscythe", ChatColor.DARK_GRAY, "An ancient evil lies within...", 400, Material.GOLDEN_HOE));
-        items.add(new PotionLauncher("Potion Launcher", ChatColor.DARK_GRAY,
-                "Instructions: Put potion into the righthand slot;                of the potion launcher,;                aim and fire!; ;Manufactured by " + ChatColor.MAGIC + "Taiterio", 20,
-                Material.HOPPER));
-        //
-
-        if (finalize)
-            for (CItem ci : items)
-                ci.finalizeItem();
-
-        if (printSuccess)
-            Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[CE] All Items have been loaded.");
-
-        deleteInactive();
-
-        if (printSuccess)
-            if (Boolean.parseBoolean(Main.config.getString("Global.Logging.Enabled")))
-                Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[CE] Took " + (System.currentTimeMillis() - time) + "ms to initialize Custom Enchantments.");
-
+    for (CItem ci : items) {
+      Permission itemTemp = new Permission("ce.item." + ci.getPermissionName(),
+          "The permission for the CE Item '" + ci.getOriginalName() + "'.");
+      itemTemp.addParent(itemNode, true);
+      Bukkit.getServer().getPluginManager().addPermission(itemTemp);
     }
 
-    private static void deleteInactive() {
-        Set<CEnchantment> e = new LinkedHashSet<CEnchantment>(EnchantManager.getEnchantments());
-        Set<CItem> i = new LinkedHashSet<CItem>(items);
-        for (CEnchantment ce : e) {
-            if (!Boolean.parseBoolean(config.getString("Enchantments." + ce.getOriginalName() + ".Enabled"))) {
-                EnchantManager.getEnchantments().remove(ce);
-                Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[CE] Custom Enchantment " + ce.getOriginalName() + " is disabled in the config.");
-            }
-        }
-        for (CItem ci : i) {
-            if (!Boolean.parseBoolean(config.getString("Items." + ci.getOriginalName() + ".Enabled"))) {
-                items.remove(ci);
-                Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[CE] Custom Item " + ci.getOriginalName() + " is disabled in the config.");
-            }
-        }
-        Tools.resolveLists();
+    for (CEnchantment ce : EnchantManager.getEnchantments()) {
+      Permission enchTemp = new Permission("ce.ench." + ce.getPermissionName(),
+          "The permission for the CE Enchantment '" + ce.getOriginalName() + "'.");
+      enchTemp.addParent(enchNode, true);
+      Bukkit.getServer().getPluginManager().addPermission(enchTemp);
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("ce") || cmd.getName().equalsIgnoreCase("customenchantments")) {
-            String result = commandC.processCommand(sender, args);
-            if (result != "")
-                sender.sendMessage(result);
-            return true;
+  }
+
+  private boolean setupEconomy() {
+      if (getServer().getPluginManager().getPlugin("Vault") == null) {
+          return false;
+      }
+    RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager()
+        .getRegistration(Economy.class);
+      if (rsp == null) {
+          return false;
+      }
+    econ = rsp.getProvider();
+    return econ != null;
+  }
+
+  @Override
+  public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    if (cmd.getName().equalsIgnoreCase("ce") || cmd.getName()
+        .equalsIgnoreCase("customenchantments")) {
+      String result = commandC.processCommand(sender, args);
+        if (result != "") {
+            sender.sendMessage(result);
         }
-        return false;
+      return true;
     }
+    return false;
+  }
 
 }
