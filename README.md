@@ -1,20 +1,14 @@
+# CustomEnchantments
 
+This is a fork of the [Taiterio's ce](https://github.com/Taiterio/ce).
 
-# Custom Enchantments
-
-## Information
-
-The plugin's main page: http://dev.bukkit.org/bukkit-plugins/custom-enchantments/
-
-This project was not originally intended to be public, 
-if you still want to take a look into the code and or contribute to the project, 
-feel free to do so.
+Supports Minecraft 1.18.2 and Requires Java 17.
 
 ## Dependencies
 
 Custom Enchantments requires the following libraries:
 
 * Bukkit / Spigot, independent of the version
-* Vault (http://dev.bukkit.org/bukkit-plugins/vault)
-* Worldedit (http://dev.bukkit.org/bukkit-plugins/worldedit/)
-* WorldGuard, with a Version below 6.0 (http://dev.bukkit.org/bukkit-plugins/worldguard)
+* [Vault](http://dev.bukkit.org/bukkit-plugins/vault)
+* [Worldedit](http://dev.bukkit.org/bukkit-plugins/worldedit/)
+* [WorldGuard](http://dev.bukkit.org/bukkit-plugins/worldguard) (with a Version below 6.0)
