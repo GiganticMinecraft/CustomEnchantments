@@ -13,20 +13,14 @@ version = "v2.5-gigantic"
 
 repositories {
     mavenLocal()
-    maven {
-        url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
+    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") {
+        name = "spigot-repo"
     }
-
-    maven {
-        url = uri("https://maven.enginehub.org/repo/")
+    maven("https://maven.enginehub.org/repo/") {
+        name = "worldguard-repo"
     }
-
-    maven {
-        url = uri("https://jitpack.io")
-    }
-
-    maven {
-        url = uri("https://repo.maven.apache.org/maven2/")
+    maven("https://jitpack.io") {
+        name = "vaultapi-repo"
     }
 }
 
