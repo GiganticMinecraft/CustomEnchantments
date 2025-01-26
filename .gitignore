@@ -1,7 +1,1 @@
-bin
-*.xml
-.checkstyle
-*.launch
-.project
-.classpath
-.settings
+target/
