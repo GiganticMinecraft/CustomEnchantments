@@ -13,6 +13,7 @@ version = "v2.5-gigantic"
 
 repositories {
     mavenLocal()
+    mavenCentral()
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") {
         name = "spigot-repo"
     }
